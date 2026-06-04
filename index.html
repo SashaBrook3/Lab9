@@ -47,6 +47,13 @@
       width: 122px;
     }
   </style>
+  <script src="https://cdn.trackjs.com/agent/v3/latest/t.js"></script>
+  <script>
+    window.TrackJS && TrackJS.install({ 
+      token: "25cbf7ef59034ebb89b4e9ab3c0c2aa8"
+      // for more configuration options, see https://docs.trackjs.com
+    });
+  </script>
 </head>
 
 <body>
@@ -88,20 +95,195 @@
   </main>
 
   <script>
+    class CalculationError extends Error {
+      constructor(message) {
+        super(message);
+        this.name = "CalculationError";
+      }
+    }
     let form = document.querySelector('form');
-    form.addEventListener('submit', e => {
+    form.addEventListener("submit", e => {
       e.preventDefault();
-      let output = document.querySelector('output');
-      let firstNum = document.querySelector('#first-num').value;
-      let secondNum = document.querySelector('#second-num').value;
-      let operator = document.querySelector('#operator').value;
-      output.innerHTML = eval(`${firstNum} ${operator} ${secondNum}`);
+
+      let output = document.querySelector("output");
+
+      try {
+        let firstNum = document.querySelector("#first-num").value;
+        let secondNum = document.querySelector("#second-num").value;
+        let operator = document.querySelector("#operator").value;
+
+        firstNum = Number(firstNum);
+        secondNum = Number(secondNum);
+
+        if (Number.isNaN(firstNum) || Number.isNaN(secondNum)) {
+          throw new CalculationError("Both inputs must be valid numbers.");  
+        }
+
+        if (operator === "/" && secondNum === 0) {
+          throw new CalculationError("Cannot divide by zero.");
+        }
+
+        const result = eval(`${firstNum} ${operator} ${secondNum}`);
+
+        output.textContent = result;
+
+        console.log("Calculation successful:", result);
+
+      } catch (error) {
+        if (error instanceof CalculationError) {
+          console.error("Custom CalculationError caught:");
+        } else {
+          console.error("Unknown error caught:");
+        }
+        console.error(error.name);
+        console.error(error.message);
+
+        output.textContent = "Error: " + error.message;
+      } finally {
+        console.log("Calculation attempt finished.");
+      }
     });
 
     let errorBtns = Array.from(document.querySelectorAll('#error-btns > button'));
 
     // Start your code here
     // You may move this JS to another file if you wish
+    let timerRunning = false;
+
+    function getCalcData() {
+      return {
+        firstNum: document.querySelector("#first-num").value,
+        operator: document.querySelector("#operator").value,
+        secondNum: document.querySelector("#second-num").value,
+        result: document.querySelector("output").textContent
+      };
+    }
+
+
+    window.onerror = function (message, source, lineno, colno, error) {
+      console.log("Global error caught!");
+      console.log("Message:", message);
+      console.log("Line:", lineno);
+      console.log("Column:", colno);
+      console.log("Error object:", error);
+
+      return true; // prevents default browser error handling
+    };
+    // Global Error 
+    window.addEventListener("error", (event) => {
+      console.error("Global Error Caught:");
+      console.error(event.message);
+    });
+
+    // Console Log
+    errorBtns[0].addEventListener("click", () => {
+      console.log("Calculator Data:");
+      console.log(getCalcData());
+    });
+
+    // Console Error
+    errorBtns[1].addEventListener("click", () => {
+      console.error("Calculator Error Example:");
+      console.error(getCalcData());
+    });
+
+    // Console Count
+    errorBtns[2].addEventListener("click", () => {
+      console.count("Console Count Button");
+    });
+
+    // Console Warn
+    errorBtns[3].addEventListener("click", () => {
+      console.warn("Be careful with division by zero!");
+    });
+
+    // Console Assert
+    errorBtns[4].addEventListener("click", () => {
+      const data = getCalcData();
+
+      console.assert(
+        data.secondNum !== "0",
+        "Second number should not be 0."
+      );
+    });
+
+    // Console Clear
+    errorBtns[5].addEventListener("click", () => {
+      console.clear();
+    });
+
+    // Console Dir
+    errorBtns[6].addEventListener("click", () => {
+      console.dir(getCalcData());
+    });
+
+    // Console dirxml
+    errorBtns[7].addEventListener("click", () => {
+      console.dirxml(document.querySelector("form"));
+    });
+
+    // Console Group Start
+    errorBtns[8].addEventListener("click", () => {
+
+      const data = getCalcData();
+
+      console.group("Calculator Information");
+
+      console.log("First Number:", data.firstNum);
+      console.log("Operator:", data.operator);
+      console.log("Second Number:", data.secondNum);
+      console.log("Result:", data.result);
+    });
+
+    // Console Group End
+    errorBtns[9].addEventListener("click", () => {
+      console.groupEnd();
+    });
+
+    // Console Table
+    errorBtns[10].addEventListener("click", () => {
+      console.table([getCalcData()]);
+    });
+
+    // Start Timer
+    errorBtns[11].addEventListener("click", () => {
+
+      console.time("Calculator Timer");
+      timerRunning = true;
+
+      console.log("Timer started.");
+    });
+
+    // End Timer
+    errorBtns[12].addEventListener("click", () => {
+
+      if (timerRunning) {
+        console.timeEnd("Calculator Timer");
+        timerRunning = false;
+      } else {
+        console.warn("Start the timer first.");
+      }
+    });
+
+    // Console Trace
+    errorBtns[13].addEventListener("click", () => {
+
+      function stepOne() {
+        stepTwo();
+      }
+
+      function stepTwo() {
+        console.trace("Calculator Trace");
+      }
+
+      stepOne();
+    });
+
+    // Trigger a Global Error
+    errorBtns[14].addEventListener("click", () => {
+      throw new Error("Manual global error triggered");
+    });
+
   </script>
 </body>
 
